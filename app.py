@@ -28,10 +28,6 @@ def service_discovery():
             ]
         )
 
-        # log the instances we are discovering
-        with open('app.log', 'a') as f:
-            f.write(f'Discovered instances: {response}\n')
-
         services = [
             f"http://{instance['PublicIpAddress']}:8080"
             for reservation in response['Reservations']
