@@ -7,11 +7,11 @@ import boto3
 app = Flask(__name__)
 
 # List of your backend servers
-backends = []
-healthy_backends = list(backends)
+services = []
+healthy_services = list(services)
 
 def service_discovery():
-    global backends
+    global services
     ec2 = boto3.client('ec2', region_name='eu-north-1')
 
     while True:
@@ -32,7 +32,7 @@ def service_discovery():
         with open('app.log', 'a') as f:
             f.write(f'Discovered instances: {response}\n')
 
-        backends = [
+        services = [
             f"http://{instance['PublicIpAddress']}:8080"
             for reservation in response['Reservations']
             for instance in reservation['Instances']
@@ -41,34 +41,34 @@ def service_discovery():
         sleep(10)
 
 def health_check():
-    global healthy_backends
+    global healthy_services
     while True:
-        for backend in backends:
+        for service in services:
             try:
-                response = requests.get(f'{backend}/health', timeout=2)
+                response = requests.get(f'{service}/health', timeout=2)
                 if response.status_code == 200:
-                    if backend not in healthy_backends:
-                        healthy_backends.append(backend)
+                    if service not in healthy_services:
+                        healthy_services.append(service)
                 else:
-                    if backend in healthy_backends:
-                        healthy_backends.remove(backend)
+                    if service in healthy_services:
+                        healthy_services.remove(service)
             except requests.exceptions.RequestException:
-                if backend in healthy_backends:
-                    healthy_backends.remove(backend)
+                if service in healthy_services:
+                    healthy_services.remove(service)
         sleep(10)
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def load_balancer(path):
-    if not healthy_backends:
+    if not healthy_services:
         return 'No healthy backends', 503
     # Round-robin load balancing by rotating the list of healthy backends
-    backend = healthy_backends.pop(0)
-    healthy_backends.append(backend)
+    service = healthy_services.pop(0)
+    healthy_services.append(service)
     # log the backend we are sending traffic to and send to a file app.log
     with open('app.log', 'a') as f:
-        f.write(f'Sending traffic to {backend}/{path}\n')
-    return redirect(f'{backend}/{path}', 302)
+        f.write(f'Sending traffic to {service}/{path}\n')
+    return redirect(f'{service}/{path}', 302)
 
 
 if __name__ == "__main__":
