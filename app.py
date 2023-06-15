@@ -64,7 +64,7 @@ def load_balancer(path):
     # log the backend we are sending traffic to and send to a file app.log
     with open('app.log', 'a') as f:
         f.write(f'Sending traffic to {service}/{path}\n')
-    return redirect(f'{service}/{path}', 302)
+    return redirect(f'{service}/{path}', 307)
 
 
 if __name__ == "__main__":
