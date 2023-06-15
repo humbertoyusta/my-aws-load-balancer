@@ -19,7 +19,7 @@ def service_discovery():
             Filters=[
                 {
                     'Name': 'tag:Name',
-                    'Values': ['flaskapp']
+                    'Values': ['flaskapp-group']
                 },
                 {
                     'Name': 'instance-state-name',
