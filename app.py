@@ -60,6 +60,9 @@ def load_balancer():
     # Round-robin load balancing by rotating the list of healthy backends
     backend = healthy_backends.pop(0)
     healthy_backends.append(backend)
+    # log the backend we are sending traffic to and send to a file app.log
+    with open('app.log', 'a') as f:
+        f.write(f'Sending traffic to {backend}\n')
     return redirect(backend, 302)
 
 
