@@ -18,8 +18,8 @@ def service_discovery():
         response = ec2.describe_instances(
             Filters=[
                 {
-                    'Name': 'tag:your-tag-key',
-                    'Values': ['your-tag-value']
+                    'Name': 'tag:Name',
+                    'Values': ['flaskapp']
                 },
                 {
                     'Name': 'instance-state-name',
