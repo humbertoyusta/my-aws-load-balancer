@@ -33,7 +33,7 @@ def service_discovery():
             f.write(f'Discovered instances: {response}\n')
 
         backends = [
-            f"http://{instance['PrivateIpAddress']}:8080"
+            f"http://{instance['PublicIpAddress']}:8080"
             for reservation in response['Reservations']
             for instance in reservation['Instances']
         ]
@@ -57,8 +57,9 @@ def health_check():
                     healthy_backends.remove(backend)
         sleep(10)
 
-@app.route('/')
-def load_balancer():
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def load_balancer(path):
     if not healthy_backends:
         return 'No healthy backends', 503
     # Round-robin load balancing by rotating the list of healthy backends
@@ -66,8 +67,8 @@ def load_balancer():
     healthy_backends.append(backend)
     # log the backend we are sending traffic to and send to a file app.log
     with open('app.log', 'a') as f:
-        f.write(f'Sending traffic to {backend}\n')
-    return redirect(backend, 302)
+        f.write(f'Sending traffic to {backend}/{path}\n')
+    return redirect(f'{backend}/{path}', 302)
 
 
 if __name__ == "__main__":
