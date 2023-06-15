@@ -54,7 +54,7 @@ def health_check():
         sleep(10)
 
 @app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
+@app.route('/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH'])
 def load_balancer(path):
     if not healthy_services:
         return 'No healthy backends', 503
